@@ -7,7 +7,7 @@ This module stores:
 - a simple validation helper
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 
 # ---------------------------------------------
@@ -25,7 +25,7 @@ FIELD_SCHEMA: Dict[str, str] = {
 
 
 # ---------------------------------------------
-# CONTROLLED VOCABULARIES
+# CONTROLLED VOCULARIES
 # ---------------------------------------------
 ALLOWED_RISK_TYPES: List[str] = [
     "property",
@@ -61,44 +61,57 @@ ALLOWED_TIME_HORIZONS: List[str] = [
 # ---------------------------------------------
 # SIMPLE VALIDATION HELPER
 # ---------------------------------------------
-def validate_extracted_json(data: Dict[str, Any]) -> bool:
+def validate_extracted_json(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
-    Simple validation check for LLM JSON output.
+    Validate that the extracted JSON object matches the expected schema.
 
     Checks:
     - All required fields exist
     - Correct types (string or list)
     - Controlled vocabulary fields are valid
 
-    Returns True if valid, False otherwise.
+    Returns
+    -------
+    dict or None
+        The cleaned dictionary if valid, or None if invalid.
     """
 
     # Check presence of all fields
-    for field in FIELD_SCHEMA.keys():
+    for field, expected_type in FIELD_SCHEMA.items():
         if field not in data:
             print(f"Missing field: {field}")
-            return False
+            return None
 
     # Type checks
     for field, expected_type in FIELD_SCHEMA.items():
-        if expected_type == "string" and not isinstance(data[field], str):
-            print(f"Field {field} must be a string")
-            return False
-        if expected_type == "list" and not isinstance(data[field], list):
-            print(f"Field {field} must be a list")
-            return False
+        value = data[field]
+
+        if expected_type == "string":
+            if not isinstance(value, str):
+                print(f"Field {field} must be a string")
+                return None
+
+        if expected_type == "list":
+            if not isinstance(value, list):
+                print(f"Field {field} must be a list")
+                return None
 
     # Controlled vocabulary checks
-    if data["risk_type"] not in ALLOWED_RISK_TYPES:
-        print(f"Invalid risk_type: {data['risk_type']}")
-        return False
+    # Empty string is allowed here, since the model may leave it blank
+    risk_type = data.get("risk_type", "")
+    if risk_type and risk_type not in ALLOWED_RISK_TYPES:
+        print(f"Invalid risk_type: {risk_type}")
+        return None
 
-    if data["region"] not in ALLOWED_REGIONS:
-        print(f"Invalid region: {data['region']}")
-        return False
+    region = data.get("region", "")
+    if region and region not in ALLOWED_REGIONS:
+        print(f"Invalid region: {region}")
+        return None
 
-    if data["time_horizon"] not in ALLOWED_TIME_HORIZONS:
-        print(f"Invalid time_horizon: {data['time_horizon']}")
-        return False
+    time_horizon = data.get("time_horizon", "")
+    if time_horizon and time_horizon not in ALLOWED_TIME_HORIZONS:
+        print(f"Invalid time_horizon: {time_horizon}")
+        return None
 
-    return True
+    # If everything passes, return the cleaned dictionary
+    return data

@@ -51,7 +51,7 @@ def call_llm_on_chunk(chunk_text: str, max_retries: int = 1) -> Optional[Dict]:
             )
 
             # Extract content string from LLM
-            content = response.choices[0].message["content"]
+            content = response.choices[0].message.content
 
             # Attempt to parse JSON
             data = json.loads(content)
