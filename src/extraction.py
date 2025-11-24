@@ -42,7 +42,7 @@ def call_llm_on_chunk(chunk_text: str, max_retries: int = 1) -> Optional[Dict]:
     for attempt in range(max_retries + 1):
         try:
             response = client.chat.completions.create(
-                model="llama3-70b-8192",
+                model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": "You are a JSON extraction assistant."},
                     {"role": "user", "content": prompt},
