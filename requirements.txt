@@ -1,0 +1,8 @@
+pandas
+numpy
+scikit-learn
+matplotlib
+python-dotenv
+tqdm
+requests
+groq
